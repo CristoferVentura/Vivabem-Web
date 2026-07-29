@@ -28,10 +28,18 @@ header {
 .nav-container {
     max-width: 1200px;
     margin: 0 auto;
-    padding: 20px;
+    padding: 5px;
     display: flex;
     justify-content: space-between;
     align-items: center;
+}
+
+.logo-img {
+    height: 60px;
+    width: auto;
+    object-fit: contain;
+    padding-right: 1rem;
+    padding-bottom: 2px;
 }
 
 .brand-container {
@@ -39,12 +47,6 @@ header {
     align-items: center;
     gap: 10px;
     text-decoration: none;
-}
-
-.logo-img {
-    height: 40px;
-    width: auto;
-    object-fit: contain;
 }
 
 .logo-text {
@@ -190,7 +192,7 @@ header {
 .app-mockup {
     width: 280px;
     height: 520px;
-    background-color: #f4f7fe;
+    background-color: #ffffff;
     border: 8px solid #1a1a1a;
     border-radius: 36px;
     display: flex;
@@ -214,9 +216,11 @@ header {
 .mockup-screen {
     font-weight: bold;
     color: #4169E1;
-    font-size: 14px;
+    font-size: 1px;
     text-align: center;
-    padding: 20px;
+    padding: 1px;
+    border-radius: 50px;
+    overflow: hidden;
 }
 
 /* Cards de Funcionalidades */

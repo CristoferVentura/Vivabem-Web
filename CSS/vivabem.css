@@ -26,10 +26,18 @@ header {
 .nav-container {
     max-width: 1200px;
     margin: 0 auto;
-    padding: 20px;
+    padding: 5px;
     display: flex;
     justify-content: space-between;
     align-items: center;
+}
+
+.logo-img {
+    height: 60px;
+    width: auto;
+    object-fit: contain;
+    padding-right: 1rem;
+    padding-bottom: 2px;
 }
 
 .logo {

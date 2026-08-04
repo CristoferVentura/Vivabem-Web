@@ -11,6 +11,7 @@ $hasQr  = is_file($qrPath);
 $downloadUrl = '#download-app';
 ?>
 
+
 <main class="dashboard">
     <div class="dash-head" data-animate="hero">
         <p class="badge">Área do usuário</p>

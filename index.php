@@ -9,7 +9,7 @@ require __DIR__ . '/includes/header.php';
     <div class="hero-container" data-animate="hero">
         <p class="hero-brand">Viva<span>Bem</span></p>
         <h1>A solução inteligente para o dia a dia, agora na <em>sua mão</em></h1>
-        <p>Um ecossistema pensado para cuidar da terceira idade com acessibilidade, segurança familiar e tecnologia acolhedora.</p>
+        <p>A tecnologia pensada para cuidar da terceira idade com acessibilidade, segurança familiar e tecnologia acolhedora.</p>
         <div class="hero-actions">
             <?php if (is_logged_in()): ?>
                 <a href="<?= e(base_url('pages/dashboard.php')) ?>" class="btn btn-primary">Abrir painel</a>

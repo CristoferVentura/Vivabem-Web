@@ -18,7 +18,10 @@ require __DIR__ . '/../includes/header.php';
         <div class="section-inner app-grid-2">
             <div class="app-image-container" data-reveal>
                 <div class="app-mockup" data-parallax>
-                    <img src="<?= e(asset('images/print-apps_idoso.jpg')) ?>" alt="Print do aplicativo VivaBem">
+                    <div class="slider-container">
+                        <img class="slide active" src="<?= e(asset('images/print-apps_idoso1.jpeg')) ?>" alt="Print do aplicativo VivaBem 1">
+                        <img class="slide" src="<?= e(asset('images/print-apps_idoso2.jpeg')) ?>" alt="Print do aplicativo VivaBem 2">
+                    </div>
                 </div>
             </div>
             <div data-reveal>
@@ -46,9 +49,9 @@ require __DIR__ . '/../includes/header.php';
                     <p>Comando rápido para acionar a rede de apoio com localização e contato imediato da família.</p>
                 </article>
                 <article class="feature-card" data-reveal>
-                    <div class="icon-mark">BE</div>
-                    <h3>Gráficos de bem-estar</h3>
-                    <p>Registro simplificado de parâmetros de saúde e atividades físicas no dia a dia.</p>
+                    <div class="icon-mark">CE</div>
+                    <h3>Conexão com familiares</h3>
+                    <p>Conexão com familiares para receber notificações e acompanhar o bem-estar do idoso.</p>
                 </article>
             </div>
         </div>

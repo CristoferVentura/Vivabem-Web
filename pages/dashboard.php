@@ -14,9 +14,14 @@ $downloadUrl = '#download-app';
 
 <main class="dashboard">
     <div class="dash-head" data-animate="hero">
-        <p class="badge">Área do usuário</p>
+        <p class="badge"><?= is_company() ? 'Área da clínica' : 'Área do usuário' ?></p>
         <h1>Olá, <?= e(current_user_first_name()) ?></h1>
         <p>Acesse o ecossistema mobile do VivaBem e acompanhe o cuidado em tempo real.</p>
+        <?php if (is_company()): ?>
+            <div class="dash-head__actions">
+                <a href="<?= e(base_url('pages/clinic_caregivers.php')) ?>" class="btn btn-primary">Gerenciar cuidadores</a>
+            </div>
+        <?php endif; ?>
     </div>
 
     <section class="app-showcase" data-reveal>

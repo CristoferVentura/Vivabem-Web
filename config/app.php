@@ -77,9 +77,49 @@ function is_logged_in(): bool
     return !empty($_SESSION['user_id']);
 }
 
+function current_user_id(): int
+{
+    return (int) ($_SESSION['user_id'] ?? 0);
+}
+
+function current_user_role(): string
+{
+    return (string) ($_SESSION['user_role'] ?? '');
+}
+
+function is_company(): bool
+{
+    return current_user_role() === 'company';
+}
+
 function current_user_name(): string
 {
     return (string) ($_SESSION['user_name'] ?? '');
+}
+
+function only_digits(string $value): string
+{
+    return preg_replace('/\D+/', '', $value) ?? '';
+}
+
+function format_cpf(string $value): string
+{
+    $digits = only_digits($value);
+    if (strlen($digits) !== 11) {
+        return $value;
+    }
+
+    return substr($digits, 0, 3) . '.' . substr($digits, 3, 3) . '.' . substr($digits, 6, 3) . '-' . substr($digits, 9, 2);
+}
+
+function format_cnpj(string $value): string
+{
+    $digits = only_digits($value);
+    if (strlen($digits) !== 14) {
+        return $value;
+    }
+
+    return substr($digits, 0, 2) . '.' . substr($digits, 2, 3) . '.' . substr($digits, 5, 3) . '/' . substr($digits, 8, 4) . '-' . substr($digits, 12, 2);
 }
 
 function current_user_first_name(): string

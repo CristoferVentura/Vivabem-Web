@@ -3,28 +3,28 @@
 declare(strict_types=1);
 
 /**
- * Envia e-mail de verificação com o token.
+ * Envia e-mail com o código de redefinição de senha.
  * Retorna true se o envio (ou log local) foi concluído.
  */
 function send_verification_email(string $toEmail, string $toName, string $token): bool
 {
     $config = require __DIR__ . '/../config/mail.php';
 
-    $subject = 'Seu código de verificação — VivaBem';
+    $subject = 'Redefinição de senha — VivaBem';
     $bodyText = "Olá, {$toName}!\n\n"
-        . "Seu código de verificação do VivaBem é: {$token}\n\n"
-        . "Ele expira em 15 minutos. Se você não solicitou este cadastro, ignore este e-mail.\n\n"
+        . "Seu código para redefinir a senha do VivaBem é: {$token}\n\n"
+        . "Ele expira em 15 minutos. Se você não solicitou esta redefinição, ignore este e-mail.\n\n"
         . "— Equipe VivaBem";
 
     $bodyHtml = '<div style="font-family:Arial,sans-serif;max-width:480px;margin:0 auto;padding:24px;color:#1a1a1a;">'
         . '<h2 style="color:#4169E1;margin:0 0 12px;">VivaBem</h2>'
         . '<p>Olá, <strong>' . htmlspecialchars($toName, ENT_QUOTES, 'UTF-8') . '</strong>!</p>'
-        . '<p>Use o código abaixo para confirmar seu e-mail:</p>'
+        . '<p>Use o código abaixo para redefinir sua senha:</p>'
         . '<p style="font-size:32px;letter-spacing:8px;font-weight:700;background:#eef3fb;padding:16px 20px;border-radius:12px;text-align:center;color:#4169E1;">'
         . htmlspecialchars($token, ENT_QUOTES, 'UTF-8')
         . '</p>'
         . '<p style="color:#5a6270;font-size:14px;">O código expira em 15 minutos.</p>'
-        . '<p style="color:#5a6270;font-size:13px;">Se você não solicitou este cadastro, ignore este e-mail.</p>'
+        . '<p style="color:#5a6270;font-size:13px;">Se você não solicitou a redefinição de senha, ignore este e-mail.</p>'
         . '</div>';
 
     $driver = (string) ($config['driver'] ?? 'log');
@@ -198,35 +198,36 @@ function smtp_expect($socket, array $okCodes): void
 }
 
 /**
- * Gera token numérico de 6 dígitos e prepara dados de verificação na sessão.
+ * Gera token numérico de 6 dígitos para redefinição de senha.
  */
-function create_email_verification_token(string $name, string $email, string $passwordHash): string
+function create_password_reset_token(int $userId, string $name, string $email): string
 {
     $config = require __DIR__ . '/../config/mail.php';
     $ttl = (int) ($config['token_ttl'] ?? 900);
     $token = (string) random_int(100000, 999999);
 
-    $_SESSION['pending_registration'] = [
-        'name'         => $name,
-        'email'        => $email,
-        'password'     => $passwordHash,
-        'token_hash'   => hash('sha256', $token),
-        'expires_at'   => time() + $ttl,
-        'attempts'     => 0,
-        'created_at'   => time(),
+    $_SESSION['pending_password_reset'] = [
+        'user_id'    => $userId,
+        'name'       => $name,
+        'email'      => $email,
+        'token_hash' => hash('sha256', $token),
+        'expires_at' => time() + $ttl,
+        'attempts'   => 0,
+        'created_at' => time(),
+        'verified'   => false,
     ];
 
     return $token;
 }
 
-function pending_registration(): ?array
+function pending_password_reset(): ?array
 {
-    return $_SESSION['pending_registration'] ?? null;
+    return $_SESSION['pending_password_reset'] ?? null;
 }
 
-function clear_pending_registration(): void
+function clear_pending_password_reset(): void
 {
-    unset($_SESSION['pending_registration'], $_SESSION['pending_token_preview']);
+    unset($_SESSION['pending_password_reset'], $_SESSION['pending_token_preview']);
 }
 
 function mask_email(string $email): string

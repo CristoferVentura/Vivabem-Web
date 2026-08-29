@@ -13,7 +13,7 @@ $loggedIn = is_logged_in();
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?= e($pageTitle) ?></title>
 
-    <link rel="icon" type="image/png" href="<?= e(asset('images/favicon.ico')) ?>">
+    <link rel="icon" type="image/png" href="<?= e(asset('images/favicon.svg')) ?>">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -26,7 +26,7 @@ $loggedIn = is_logged_in();
     <header class="site-header" data-animate="header">
         <div class="nav-container">
             <a href="<?= e(base_url('index.php')) ?>" class="brand-container">
-                <img src="<?= e(asset('images/VivaBem.png')) ?>" alt="Logo VivaBem" class="logo-img">
+                <img src="<?= e(asset('images/logo_apk.png')) ?>" alt="Logo VivaBem" class="logo-img">
                 <span class="logo-text">Viva<span>Bem</span></span>
             </a>
 
@@ -40,6 +40,9 @@ $loggedIn = is_logged_in();
                 <?php if ($loggedIn): ?>
                     <li><a href="<?= e(base_url('pages/nossoApp.php')) ?>" class="<?= $activeNav === 'app' ? 'active' : '' ?>">Sobre o App</a></li>
                     <li><a href="<?= e(base_url('pages/dashboard.php')) ?>" class="<?= $activeNav === 'dashboard' ? 'active' : '' ?>">Painel</a></li>
+                    <?php if (is_company()): ?>
+                        <li><a href="<?= e(base_url('pages/clinic_caregivers.php')) ?>" class="<?= $activeNav === 'caregivers' ? 'active' : '' ?>">Cuidadores</a></li>
+                    <?php endif; ?>
                     <li><a href="<?= e(base_url('logout.php')) ?>" class="nav-cta nav-cta--ghost">Sair</a></li>
                 <?php else: ?>
                     <li><a href="<?= e(base_url('login.php')) ?>" class="<?= $activeNav === 'login' ? 'active' : '' ?>">Entrar</a></li>

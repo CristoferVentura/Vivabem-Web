@@ -9,31 +9,31 @@ if (is_logged_in()) {
     redirect('pages/dashboard.php');
 }
 
-$pending = pending_registration();
+$pending = pending_password_reset();
 if ($pending === null) {
-    flash('error', 'Nenhum cadastro pendente. Preencha o formulário de cadastro.');
-    redirect('register.php');
+    flash('error', 'Solicite um código de recuperação de senha.');
+    redirect('forgot_password.php');
 }
 
 if (time() > (int) $pending['expires_at']) {
-    clear_pending_registration();
-    flash('error', 'O código expirou. Cadastre-se novamente.');
-    redirect('register.php');
+    clear_pending_password_reset();
+    flash('error', 'O código expirou. Solicite uma nova recuperação de senha.');
+    redirect('forgot_password.php');
 }
 
 $maskedEmail = mask_email((string) $pending['email']);
 $previewToken = $_SESSION['pending_token_preview'] ?? null;
 
-$pageTitle = 'Verificar e-mail — VivaBem';
-$activeNav = 'register';
+$pageTitle = 'Verificar código — VivaBem';
+$activeNav = 'login';
 $bodyClass = 'page-auth';
 require __DIR__ . '/includes/header.php';
 ?>
 
 <main class="auth-page">
     <div class="auth-card">
-        <h1>Verificar e-mail</h1>
-        <p>Enviamos um código de 6 dígitos para <strong><?= e($maskedEmail) ?></strong>. Digite-o abaixo para concluir o cadastro.</p>
+        <h1>Verificar código</h1>
+        <p>Enviamos um código de 6 dígitos para <strong><?= e($maskedEmail) ?></strong>. Digite-o abaixo para redefinir sua senha.</p>
 
         <?php if ($previewToken): ?>
             <div class="token-preview" role="status">
@@ -68,7 +68,7 @@ require __DIR__ . '/includes/header.php';
 
         <p class="auth-alt">
             E-mail errado?
-            <a href="<?= e(base_url('actions/cancel_register_action.php')) ?>">Voltar ao cadastro</a>
+            <a href="<?= e(base_url('actions/cancel_register_action.php')) ?>">Voltar à recuperação</a>
         </p>
     </div>
 </main>

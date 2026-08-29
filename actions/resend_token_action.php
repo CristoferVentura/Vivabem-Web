@@ -9,41 +9,49 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     redirect('verify.php');
 }
 
-$pending = pending_registration();
+$pending = pending_password_reset();
 if ($pending === null) {
-    flash('error', 'Nenhum cadastro pendente. Preencha o formulário novamente.');
-    redirect('register.php');
+    flash('error', 'Solicite um código de recuperação de senha.');
+    redirect('forgot_password.php');
 }
 
-// Evita spam: no máximo 1 reenvio a cada 45 segundos
 $last = (int) ($pending['created_at'] ?? 0);
 if (time() - $last < 45) {
     flash('error', 'Aguarde alguns segundos antes de solicitar um novo código.');
     redirect('verify.php');
 }
 
-$token = create_email_verification_token(
+$userId = (int) ($pending['user_id'] ?? 0);
+$token = create_password_reset_token(
+    $userId,
     (string) $pending['name'],
-    (string) $pending['email'],
-    (string) $pending['password']
+    (string) $pending['email']
 );
 
-$sent = send_verification_email((string) $pending['email'], (string) $pending['name'], $token);
 $mailConfig = require __DIR__ . '/../config/mail.php';
+$showFallback = !empty($mailConfig['show_code_fallback']);
+$hasSmtpUser = trim((string) ($mailConfig['smtp_user'] ?? '')) !== '';
 
-if (!$sent || trim((string) ($mailConfig['smtp_user'] ?? '')) === '') {
-    if (!empty($mailConfig['show_code_fallback'])) {
-        $_SESSION['pending_token_preview'] = $token;
+if ($userId > 0) {
+    $sent = send_verification_email((string) $pending['email'], (string) $pending['name'], $token);
+
+    if (!$sent || ((string) ($mailConfig['driver'] ?? '') === 'smtp' && !$hasSmtpUser)) {
+        if ($showFallback) {
+            $_SESSION['pending_token_preview'] = $token;
+        }
     }
-}
 
-if ($sent && trim((string) ($mailConfig['smtp_user'] ?? '')) !== '') {
-    unset($_SESSION['pending_token_preview']);
-    flash('success', 'Novo código enviado para o seu e-mail.');
-} elseif (!empty($mailConfig['show_code_fallback'])) {
-    flash('success', 'Novo código gerado (modo local/teste).');
+    if ($sent && $hasSmtpUser) {
+        unset($_SESSION['pending_token_preview']);
+        flash('success', 'Novo código enviado para o seu e-mail.');
+    } elseif ($showFallback) {
+        flash('success', 'Novo código gerado (modo local/teste).');
+    } else {
+        flash('error', 'Falha ao reenviar o e-mail. Configure o SMTP em config/mail.php.');
+    }
 } else {
-    flash('error', 'Falha ao reenviar o e-mail. Configure o SMTP em config/mail.php.');
+    unset($_SESSION['pending_token_preview']);
+    flash('success', 'Se este e-mail estiver cadastrado, enviamos um novo código.');
 }
 
 redirect('verify.php');

@@ -14,7 +14,7 @@ require __DIR__ . '/includes/header.php';
 <main class="auth-page">
     <div class="auth-card">
         <h1>Criar conta</h1>
-        <p>Crie sua conta para acessar o painel e o ecossistema VivaBem. Enviaremos um código de verificação para o seu e-mail.</p>
+        <p>Crie sua conta para acessar o painel e o ecossistema VivaBem. Você já poderá entrar em seguida.</p>
 
         <form action="<?= e(base_url('actions/register_action.php')) ?>" method="POST" data-validate>
             <div class="form-group">
@@ -33,9 +33,10 @@ require __DIR__ . '/includes/header.php';
                 <label for="password_confirm">Confirmar senha</label>
                 <input type="password" id="password_confirm" name="password_confirm" required minlength="6" autocomplete="new-password" placeholder="Repita a senha">
             </div>
-            <button type="submit" class="btn btn-primary btn-block">Enviar código</button>
+            <button type="submit" class="btn btn-primary btn-block">Criar conta</button>
         </form>
 
+        <p class="auth-alt">Sou clínica ou empresa? <a href="<?= e(base_url('register_company.php')) ?>">Cadastrar clínica</a></p>
         <p class="auth-alt">Já tem conta? <a href="<?= e(base_url('login.php')) ?>">Entrar</a></p>
     </div>
 </main>

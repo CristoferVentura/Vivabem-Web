@@ -28,6 +28,7 @@ require __DIR__ . '/includes/header.php';
             <button type="submit" class="btn btn-primary btn-block">Entrar</button>
         </form>
 
+        <p class="auth-alt"><a href="<?= e(base_url('forgot_password.php')) ?>">Esqueci minha senha</a></p>
         <p class="auth-alt">Ainda não tem conta? <a href="<?= e(base_url('register.php')) ?>">Cadastre-se</a></p>
     </div>
 </main>

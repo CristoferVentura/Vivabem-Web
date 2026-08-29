@@ -1,6 +1,23 @@
 (() => {
   const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
+  document.addEventListener('DOMContentLoaded', () => {
+    if (prefersReduced) return;
+
+    document.querySelectorAll('.slider-container').forEach((slider) => {
+      const slides = slider.querySelectorAll('.slide');
+      if (slides.length <= 1) return;
+
+      let currentIndex = 0;
+
+      setInterval(() => {
+        slides[currentIndex].classList.remove('active');
+        currentIndex = (currentIndex + 1) % slides.length;
+        slides[currentIndex].classList.add('active');
+      }, 3500);
+    });
+  });
+
   // Mobile nav
   const toggle = document.querySelector('.nav-toggle');
   const menu = document.querySelector('.nav-menu');
@@ -40,6 +57,55 @@
 
     form.querySelectorAll('input, textarea, select').forEach((field) => {
       field.addEventListener('input', () => field.classList.remove('is-invalid'));
+    });
+  });
+
+  const applyMask = (input, formatter) => {
+    input.addEventListener('input', () => {
+      const start = input.selectionStart;
+      const before = input.value;
+      input.value = formatter(before);
+      if (start !== null && input === document.activeElement) {
+        const delta = input.value.length - before.length;
+        input.setSelectionRange(start + delta, start + delta);
+      }
+    });
+  };
+
+  const onlyDigits = (value, max) => value.replace(/\D+/g, '').slice(0, max);
+
+  document.querySelectorAll('[data-mask="cnpj"]').forEach((input) => {
+    applyMask(input, (value) => {
+      const d = onlyDigits(value, 14);
+      return d
+        .replace(/^(\d{2})(\d)/, '$1.$2')
+        .replace(/^(\d{2})\.(\d{3})(\d)/, '$1.$2.$3')
+        .replace(/\.(\d{3})(\d)/, '.$1/$2')
+        .replace(/(\d{4})(\d)/, '$1-$2');
+    });
+  });
+
+  document.querySelectorAll('[data-mask="cpf"]').forEach((input) => {
+    applyMask(input, (value) => {
+      const d = onlyDigits(value, 11);
+      return d
+        .replace(/^(\d{3})(\d)/, '$1.$2')
+        .replace(/^(\d{3})\.(\d{3})(\d)/, '$1.$2.$3')
+        .replace(/\.(\d{3})(\d)/, '.$1-$2');
+    });
+  });
+
+  document.querySelectorAll('[data-mask="phone"]').forEach((input) => {
+    applyMask(input, (value) => {
+      const d = onlyDigits(value, 11);
+      if (d.length <= 10) {
+        return d
+          .replace(/^(\d{2})(\d)/, '($1) $2')
+          .replace(/(\d{4})(\d)/, '$1-$2');
+      }
+      return d
+        .replace(/^(\d{2})(\d)/, '($1) $2')
+        .replace(/(\d{5})(\d)/, '$1-$2');
     });
   });
 
@@ -111,4 +177,6 @@
     duration: 0.7,
     ease: 'power3.out',
   });
+
+  
 })();

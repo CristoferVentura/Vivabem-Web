@@ -5,7 +5,7 @@ $pageTitle = 'Painel — VivaBem';
 $activeNav = 'dashboard';
 require __DIR__ . '/../includes/header.php';
 
-$qrPath = ROOT_PATH . '/assets/images/qr-download.png';
+$qrPath = ROOT_PATH . '/assets/images/qrcode.png';
 $hasQr  = is_file($qrPath);
 // Altere o link abaixo quando o APK / loja estiver disponível
 $downloadUrl = '#download-app';
@@ -48,7 +48,7 @@ $downloadUrl = '#download-app';
                 <div class="app-qr" id="qr-download">
                     <div class="app-qr__frame">
                         <?php if ($hasQr): ?>
-                            <img src="<?= e(asset('images/qr-download.png')) ?>" alt="QR Code para download do aplicativo VivaBem">
+                            <img src="<?= e(asset('images/qrcode.png')) ?>" alt="QR Code para download do aplicativo VivaBem">
                         <?php else: ?>
                             <div class="app-qr__placeholder">
                                 <span class="app-qr__mark">QR</span>

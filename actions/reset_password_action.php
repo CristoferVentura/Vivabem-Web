@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 require_once __DIR__ . '/../config/app.php';
-require_once __DIR__ . '/../config/database.php';
+require_once __DIR__ . '/../config/supabase.php';
 require_once __DIR__ . '/../includes/mailer.php';
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
@@ -29,11 +29,17 @@ if ($password !== $confirm) {
     redirect('reset_password.php');
 }
 
-$update = $pdo->prepare('UPDATE users SET password = :password WHERE id = :id LIMIT 1');
-$update->execute([
-    'password' => password_hash($password, PASSWORD_DEFAULT),
-    'id'       => (int) $pending['user_id'],
-]);
+try {
+    supabase_request('users', 'PATCH', [
+        'password' => password_hash($password, PASSWORD_DEFAULT),
+    ], [
+        'id' => 'eq.' . (int) $pending['user_id'],
+    ]);
+} catch (SupabaseException $e) {
+    error_log('VivaBem Supabase reset password: ' . $e->getMessage());
+    flash('error', 'Não foi possível atualizar a senha agora. Tente novamente.');
+    redirect('reset_password.php');
+}
 
 clear_pending_password_reset();
 

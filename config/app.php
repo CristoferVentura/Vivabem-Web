@@ -41,9 +41,32 @@ function base_url(string $path = ''): string
     return $base . '/' . $path;
 }
 
+function app_url(string $path = ''): string
+{
+    $forwarded = strtolower((string) ($_SERVER['HTTP_X_FORWARDED_PROTO'] ?? ''));
+    $https = $forwarded === 'https'
+        || (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off')
+        || (string) ($_SERVER['SERVER_PORT'] ?? '') === '443';
+
+    $scheme = $https ? 'https' : 'http';
+    $host = (string) ($_SERVER['HTTP_HOST'] ?? 'localhost');
+
+    return $scheme . '://' . $host . base_url($path);
+}
+
 function asset(string $path): string
 {
     return base_url('assets/' . ltrim($path, '/'));
+}
+
+function login_user(array $user): void
+{
+    session_regenerate_id(true);
+
+    $_SESSION['user_id']    = (int) $user['id'];
+    $_SESSION['user_name']  = (string) ($user['name'] ?? '');
+    $_SESSION['user_email'] = (string) ($user['email'] ?? '');
+    $_SESSION['user_role']  = (string) ($user['role'] ?? 'family');
 }
 
 function redirect(string $path): never

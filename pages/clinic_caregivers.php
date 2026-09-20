@@ -3,25 +3,26 @@
 declare(strict_types=1);
 
 require_once __DIR__ . '/../includes/auth_check_company.php';
-require_once __DIR__ . '/../config/database.php';
+require_once __DIR__ . '/../config/supabase.php';
 
 $clinicId = current_user_id();
 $editing  = null;
 $editId   = (int) ($_GET['edit'] ?? 0);
 
 if ($editId > 0) {
-    $find = $pdo->prepare(
-        'SELECT id, name, email, phone, cpf, specialties, status
-         FROM users
-         WHERE id = :id AND role = :role AND clinic_id = :clinic_id
-         LIMIT 1'
-    );
-    $find->execute([
-        'id'        => $editId,
-        'role'      => 'caregiver',
-        'clinic_id' => $clinicId,
-    ]);
-    $editing = $find->fetch() ?: null;
+    try {
+        $editing = supabase_first(supabase_request('users', 'GET', null, [
+            'select'    => 'id,name,email,phone,cpf,specialties,status',
+            'id'        => 'eq.' . $editId,
+            'role'      => 'eq.caregiver',
+            'clinic_id' => 'eq.' . $clinicId,
+            'limit'     => 1,
+        ]));
+    } catch (SupabaseException $e) {
+        error_log('VivaBem Supabase find caregiver: ' . $e->getMessage());
+        flash('error', 'Não foi possível carregar o cuidador agora.');
+        redirect('pages/clinic_caregivers.php');
+    }
 
     if ($editing === null) {
         flash('error', 'Cuidador não encontrado nesta clínica.');
@@ -29,17 +30,18 @@ if ($editId > 0) {
     }
 }
 
-$list = $pdo->prepare(
-    'SELECT id, name, email, phone, cpf, specialties, status, created_at
-     FROM users
-     WHERE role = :role AND clinic_id = :clinic_id
-     ORDER BY name ASC'
-);
-$list->execute([
-    'role'      => 'caregiver',
-    'clinic_id' => $clinicId,
-]);
-$caregivers = $list->fetchAll();
+try {
+    $caregivers = supabase_request('users', 'GET', null, [
+        'select'    => 'id,name,email,phone,cpf,specialties,status,created_at',
+        'role'      => 'eq.caregiver',
+        'clinic_id' => 'eq.' . $clinicId,
+        'order'     => 'name.asc',
+    ]);
+} catch (SupabaseException $e) {
+    error_log('VivaBem Supabase list caregivers: ' . $e->getMessage());
+    flash('error', 'Não foi possível carregar os cuidadores agora.');
+    $caregivers = [];
+}
 
 $pageTitle = 'Cuidadores — VivaBem';
 $activeNav = 'caregivers';

@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 require_once __DIR__ . '/../config/app.php';
-require_once __DIR__ . '/../config/database.php';
+require_once __DIR__ . '/../config/supabase.php';
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     redirect('register.php');
@@ -34,23 +34,30 @@ if ($password !== $confirm) {
     redirect('register.php');
 }
 
-$stmt = $pdo->prepare('SELECT id FROM users WHERE email = :email LIMIT 1');
-$stmt->execute(['email' => $email]);
-if ($stmt->fetch()) {
-    flash('error', 'Este e-mail já está cadastrado.');
+try {
+    $existingUser = supabase_first(supabase_request('users', 'GET', null, [
+        'select' => 'id',
+        'email'  => 'eq.' . $email,
+        'limit'  => 1,
+    ]));
+
+    if ($existingUser) {
+        flash('error', 'Este e-mail já está cadastrado.');
+        redirect('register.php');
+    }
+
+    supabase_request('users', 'POST', [
+        'name'     => $name,
+        'email'    => $email,
+        'password' => password_hash($password, PASSWORD_DEFAULT),
+        'role'     => 'family',
+        'status'   => 'active',
+    ]);
+} catch (SupabaseException $e) {
+    error_log('VivaBem Supabase register: ' . $e->getMessage());
+    flash('error', 'Não foi possível criar a conta agora. Tente novamente.');
     redirect('register.php');
 }
-
-$insert = $pdo->prepare(
-    'INSERT INTO users (name, email, password, role, status) VALUES (:name, :email, :password, :role, :status)'
-);
-$insert->execute([
-    'name'     => $name,
-    'email'    => $email,
-    'password' => password_hash($password, PASSWORD_DEFAULT),
-    'role'     => 'family',
-    'status'   => 'active',
-]);
 
 flash('success', 'Conta criada com sucesso. Faça login para continuar.');
 redirect('login.php');

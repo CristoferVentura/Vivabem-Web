@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 require_once __DIR__ . '/../config/app.php';
-require_once __DIR__ . '/../config/database.php';
+require_once __DIR__ . '/../config/supabase.php';
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     redirect('register_company.php');
@@ -43,38 +43,46 @@ if ($password !== $confirm) {
     redirect('register_company.php');
 }
 
-$exists = $pdo->prepare('SELECT id FROM users WHERE email = :email LIMIT 1');
-$exists->execute(['email' => $email]);
-if ($exists->fetch()) {
-    flash('error', 'Este e-mail já está cadastrado.');
+try {
+    $existingUser = supabase_first(supabase_request('users', 'GET', null, [
+        'select' => 'id',
+        'email'  => 'eq.' . $email,
+        'limit'  => 1,
+    ]));
+
+    if ($existingUser) {
+        flash('error', 'Este e-mail já está cadastrado.');
+        redirect('register_company.php');
+    }
+
+    $existingCnpj = supabase_first(supabase_request('users', 'GET', null, [
+        'select' => 'id',
+        'cnpj'   => 'eq.' . $cnpj,
+        'limit'  => 1,
+    ]));
+
+    if ($existingCnpj) {
+        flash('error', 'Este CNPJ já está cadastrado.');
+        redirect('register_company.php');
+    }
+
+    supabase_request('users', 'POST', [
+        'name'         => $companyName,
+        'email'        => $email,
+        'password'     => password_hash($password, PASSWORD_DEFAULT),
+        'role'         => 'company',
+        'status'       => 'active',
+        'company_name' => $companyName,
+        'legal_name'   => $legalName,
+        'cnpj'         => $cnpj,
+        'phone'        => $phone,
+        'contact_name' => $contactName,
+    ]);
+} catch (SupabaseException $e) {
+    error_log('VivaBem Supabase register company: ' . $e->getMessage());
+    flash('error', 'Não foi possível cadastrar a clínica agora. Tente novamente.');
     redirect('register_company.php');
 }
-
-$cnpjExists = $pdo->prepare('SELECT id FROM users WHERE cnpj = :cnpj LIMIT 1');
-$cnpjExists->execute(['cnpj' => $cnpj]);
-if ($cnpjExists->fetch()) {
-    flash('error', 'Este CNPJ já está cadastrado.');
-    redirect('register_company.php');
-}
-
-$insert = $pdo->prepare(
-    'INSERT INTO users
-        (name, email, password, role, status, company_name, legal_name, cnpj, phone, contact_name)
-     VALUES
-        (:name, :email, :password, :role, :status, :company_name, :legal_name, :cnpj, :phone, :contact_name)'
-);
-$insert->execute([
-    'name'         => $companyName,
-    'email'        => $email,
-    'password'     => password_hash($password, PASSWORD_DEFAULT),
-    'role'         => 'company',
-    'status'       => 'active',
-    'company_name' => $companyName,
-    'legal_name'   => $legalName,
-    'cnpj'         => $cnpj,
-    'phone'        => $phone,
-    'contact_name' => $contactName,
-]);
 
 flash('success', 'Clínica cadastrada com sucesso. Faça login para acessar o painel.');
 redirect('login.php');

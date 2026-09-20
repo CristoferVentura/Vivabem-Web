@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 require_once __DIR__ . '/../config/app.php';
-require_once __DIR__ . '/../config/database.php';
+require_once __DIR__ . '/../config/supabase.php';
 require_once __DIR__ . '/../includes/mailer.php';
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
@@ -17,9 +17,17 @@ if ($email === '' || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
     redirect('forgot_password.php');
 }
 
-$stmt = $pdo->prepare('SELECT id, name, email FROM users WHERE email = :email LIMIT 1');
-$stmt->execute(['email' => $email]);
-$user = $stmt->fetch();
+try {
+    $user = supabase_first(supabase_request('users', 'GET', null, [
+        'select' => 'id,name,email',
+        'email'  => 'eq.' . $email,
+        'limit'  => 1,
+    ]));
+} catch (SupabaseException $e) {
+    error_log('VivaBem Supabase forgot password: ' . $e->getMessage());
+    flash('error', 'Não foi possível iniciar a recuperação agora. Tente novamente.');
+    redirect('forgot_password.php');
+}
 
 $mailConfig = require __DIR__ . '/../config/mail.php';
 $showFallback = !empty($mailConfig['show_code_fallback']);

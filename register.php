@@ -16,6 +16,9 @@ require __DIR__ . '/includes/header.php';
         <h1>Criar conta</h1>
         <p>Crie sua conta para acessar o painel e o ecossistema VivaBem. Você já poderá entrar em seguida.</p>
 
+        <?php require __DIR__ . '/includes/google_login_button.php'; ?>
+        <div class="auth-divider" role="separator"><span>ou</span></div>
+
         <form action="<?= e(base_url('actions/register_action.php')) ?>" method="POST" data-validate>
             <div class="form-group">
                 <label for="name">Nome completo</label>

@@ -16,6 +16,9 @@ require __DIR__ . '/includes/header.php';
         <h1>Entrar</h1>
         <p>Acesse seu painel de cuidados VivaBem.</p>
 
+        <?php require __DIR__ . '/includes/google_login_button.php'; ?>
+        <div class="auth-divider" role="separator"><span>ou</span></div>
+
         <form action="<?= e(base_url('actions/login_action.php')) ?>" method="POST" data-validate>
             <div class="form-group">
                 <label for="email">E-mail</label>

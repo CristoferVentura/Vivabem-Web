@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 require_once __DIR__ . '/../includes/auth_check_company.php';
-require_once __DIR__ . '/../config/database.php';
+require_once __DIR__ . '/../config/supabase.php';
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     redirect('pages/clinic_caregivers.php');
@@ -50,66 +50,64 @@ if ($password !== '' || $confirm !== '') {
     }
 }
 
-$owned = $pdo->prepare(
-    'SELECT id FROM users WHERE id = :id AND role = :role AND clinic_id = :clinic_id LIMIT 1'
-);
-$owned->execute([
-    'id'        => $id,
-    'role'      => 'caregiver',
-    'clinic_id' => current_user_id(),
-]);
-if (!$owned->fetch()) {
-    flash('error', 'Cuidador não encontrado nesta clínica.');
-    redirect('pages/clinic_caregivers.php');
-}
+try {
+    $owned = supabase_first(supabase_request('users', 'GET', null, [
+        'select'    => 'id',
+        'id'        => 'eq.' . $id,
+        'role'      => 'eq.caregiver',
+        'clinic_id' => 'eq.' . current_user_id(),
+        'limit'     => 1,
+    ]));
 
-$emailExists = $pdo->prepare('SELECT id FROM users WHERE email = :email AND id <> :id LIMIT 1');
-$emailExists->execute(['email' => $email, 'id' => $id]);
-if ($emailExists->fetch()) {
-    flash('error', 'Este e-mail já está cadastrado.');
-    redirect('pages/clinic_caregivers.php?edit=' . $id);
-}
+    if (!$owned) {
+        flash('error', 'Cuidador não encontrado nesta clínica.');
+        redirect('pages/clinic_caregivers.php');
+    }
 
-$cpfExists = $pdo->prepare('SELECT id FROM users WHERE cpf = :cpf AND id <> :id LIMIT 1');
-$cpfExists->execute(['cpf' => $cpf, 'id' => $id]);
-if ($cpfExists->fetch()) {
-    flash('error', 'Este CPF já está cadastrado.');
-    redirect('pages/clinic_caregivers.php?edit=' . $id);
-}
+    $emailExists = supabase_first(supabase_request('users', 'GET', null, [
+        'select' => 'id',
+        'email'  => 'eq.' . $email,
+        'id'     => 'neq.' . $id,
+        'limit'  => 1,
+    ]));
 
-if ($password !== '') {
-    $update = $pdo->prepare(
-        'UPDATE users
-         SET name = :name, email = :email, phone = :phone, cpf = :cpf, specialties = :specialties, password = :password
-         WHERE id = :id AND clinic_id = :clinic_id
-         LIMIT 1'
-    );
-    $update->execute([
+    if ($emailExists) {
+        flash('error', 'Este e-mail já está cadastrado.');
+        redirect('pages/clinic_caregivers.php?edit=' . $id);
+    }
+
+    $cpfExists = supabase_first(supabase_request('users', 'GET', null, [
+        'select' => 'id',
+        'cpf'    => 'eq.' . $cpf,
+        'id'     => 'neq.' . $id,
+        'limit'  => 1,
+    ]));
+
+    if ($cpfExists) {
+        flash('error', 'Este CPF já está cadastrado.');
+        redirect('pages/clinic_caregivers.php?edit=' . $id);
+    }
+
+    $data = [
         'name'        => $name,
         'email'       => $email,
         'phone'       => $phone,
         'cpf'         => $cpf,
         'specialties' => $specialties,
-        'password'    => password_hash($password, PASSWORD_DEFAULT),
-        'id'          => $id,
-        'clinic_id'   => current_user_id(),
+    ];
+
+    if ($password !== '') {
+        $data['password'] = password_hash($password, PASSWORD_DEFAULT);
+    }
+
+    supabase_request('users', 'PATCH', $data, [
+        'id'        => 'eq.' . $id,
+        'clinic_id' => 'eq.' . current_user_id(),
     ]);
-} else {
-    $update = $pdo->prepare(
-        'UPDATE users
-         SET name = :name, email = :email, phone = :phone, cpf = :cpf, specialties = :specialties
-         WHERE id = :id AND clinic_id = :clinic_id
-         LIMIT 1'
-    );
-    $update->execute([
-        'name'        => $name,
-        'email'       => $email,
-        'phone'       => $phone,
-        'cpf'         => $cpf,
-        'specialties' => $specialties,
-        'id'          => $id,
-        'clinic_id'   => current_user_id(),
-    ]);
+} catch (SupabaseException $e) {
+    error_log('VivaBem Supabase update caregiver: ' . $e->getMessage());
+    flash('error', 'Não foi possível atualizar o cuidador agora. Tente novamente.');
+    redirect('pages/clinic_caregivers.php?edit=' . $id);
 }
 
 flash('success', 'Dados do cuidador atualizados.');

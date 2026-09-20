@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 require_once __DIR__ . '/../includes/auth_check_company.php';
-require_once __DIR__ . '/../config/database.php';
+require_once __DIR__ . '/../config/supabase.php';
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     redirect('pages/clinic_caregivers.php');
@@ -42,37 +42,45 @@ if ($password !== $confirm) {
     redirect('pages/clinic_caregivers.php');
 }
 
-$emailExists = $pdo->prepare('SELECT id FROM users WHERE email = :email LIMIT 1');
-$emailExists->execute(['email' => $email]);
-if ($emailExists->fetch()) {
-    flash('error', 'Este e-mail já está cadastrado.');
+try {
+    $emailExists = supabase_first(supabase_request('users', 'GET', null, [
+        'select' => 'id',
+        'email'  => 'eq.' . $email,
+        'limit'  => 1,
+    ]));
+
+    if ($emailExists) {
+        flash('error', 'Este e-mail já está cadastrado.');
+        redirect('pages/clinic_caregivers.php');
+    }
+
+    $cpfExists = supabase_first(supabase_request('users', 'GET', null, [
+        'select' => 'id',
+        'cpf'    => 'eq.' . $cpf,
+        'limit'  => 1,
+    ]));
+
+    if ($cpfExists) {
+        flash('error', 'Este CPF já está cadastrado.');
+        redirect('pages/clinic_caregivers.php');
+    }
+
+    supabase_request('users', 'POST', [
+        'name'        => $name,
+        'email'       => $email,
+        'password'    => password_hash($password, PASSWORD_DEFAULT),
+        'role'        => 'caregiver',
+        'status'      => 'active',
+        'phone'       => $phone,
+        'cpf'         => $cpf,
+        'specialties' => $specialties,
+        'clinic_id'   => current_user_id(),
+    ]);
+} catch (SupabaseException $e) {
+    error_log('VivaBem Supabase add caregiver: ' . $e->getMessage());
+    flash('error', 'Não foi possível cadastrar o cuidador agora. Tente novamente.');
     redirect('pages/clinic_caregivers.php');
 }
-
-$cpfExists = $pdo->prepare('SELECT id FROM users WHERE cpf = :cpf LIMIT 1');
-$cpfExists->execute(['cpf' => $cpf]);
-if ($cpfExists->fetch()) {
-    flash('error', 'Este CPF já está cadastrado.');
-    redirect('pages/clinic_caregivers.php');
-}
-
-$insert = $pdo->prepare(
-    'INSERT INTO users
-        (name, email, password, role, status, phone, cpf, specialties, clinic_id)
-     VALUES
-        (:name, :email, :password, :role, :status, :phone, :cpf, :specialties, :clinic_id)'
-);
-$insert->execute([
-    'name'        => $name,
-    'email'       => $email,
-    'password'    => password_hash($password, PASSWORD_DEFAULT),
-    'role'        => 'caregiver',
-    'status'      => 'active',
-    'phone'       => $phone,
-    'cpf'         => $cpf,
-    'specialties' => $specialties,
-    'clinic_id'   => current_user_id(),
-]);
 
 flash('success', 'Cuidador cadastrado e vinculado à clínica.');
 redirect('pages/clinic_caregivers.php');

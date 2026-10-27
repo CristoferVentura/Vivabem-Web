@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="pt-BR"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cadastrar clínica — VivaBem</title><link rel="icon" href="/assets/images/favicon.svg"><link rel="stylesheet" href="/assets/css/main.css">
+<script src="/assets/js/app.js" defer></script><script src="/assets/js/main.js" defer></script></head>
+<body class="page-auth" data-page="register_company"><header class="site-header" data-animate="header"><div class="nav-container">
+<a href="/index.html" class="brand-container"><img src="/assets/images/logo_apk.png" alt="Logo VivaBem" class="logo-img"><span class="logo-text">Viva<span>Bem</span></span></a>
+<button class="nav-toggle" type="button" aria-label="Abrir menu" aria-expanded="false"><span></span><span></span></button>
+<ul class="nav-menu"><li><a href="/index.html">Home</a></li><li><a href="/pages/quemsomos.html">Quem Somos</a></li>
+<li data-auth hidden><a href="/pages/nossoApp.html">Sobre o App</a></li><li data-auth hidden><a href="/pages/dashboard.html">Painel</a></li>
+<li data-company hidden><a href="/pages/clinic_caregivers.html">Cuidadores</a></li><li data-auth hidden><a href="/logout.html">Sair</a></li>
+<li data-guest><a href="/login.html">Entrar</a></li><li data-guest><a href="/register.html" class="nav-cta">Cadastrar</a></li></ul></div></header>
+<div id="feedback" role="alert" aria-live="polite" hidden></div>
+
+
+<main class="auth-page">
+    <div class="auth-card auth-card--wide">
+        <h1>Cadastro de clínica</h1>
+        <p>Para clínicas, casas de repouso ou agências de cuidadores. Após o cadastro você já pode entrar no painel.</p>
+
+        <form data-api="register-company" method="POST" data-validate>
+            <div class="form-grid">
+                <div class="form-group">
+                    <label for="company_name">Nome fantasia</label>
+                    <input type="text" id="company_name" name="company_name" required maxlength="180" autocomplete="organization" placeholder="Nome da clínica">
+                </div>
+                <div class="form-group">
+                    <label for="legal_name">Razão social</label>
+                    <input type="text" id="legal_name" name="legal_name" required maxlength="180" autocomplete="organization" placeholder="Razão social">
+                </div>
+            </div>
+            <div class="form-grid">
+                <div class="form-group">
+                    <label for="cnpj">CNPJ</label>
+                    <input type="text" id="cnpj" name="cnpj" required inputmode="numeric" data-mask="cnpj" maxlength="18" autocomplete="off" placeholder="00.000.000/0000-00">
+                </div>
+                <div class="form-group">
+                    <label for="email">E-mail corporativo</label>
+                    <input type="email" id="email" name="email" required autocomplete="email" placeholder="contato@clinica.com">
+                </div>
+            </div>
+            <div class="form-grid">
+                <div class="form-group">
+                    <label for="phone">Telefone / WhatsApp</label>
+                    <input type="tel" id="phone" name="phone" required data-mask="phone" maxlength="16" autocomplete="tel" placeholder="(00) 00000-0000">
+                </div>
+                <div class="form-group">
+                    <label for="contact_name">Responsável técnico ou contato</label>
+                    <input type="text" id="contact_name" name="contact_name" required maxlength="120" autocomplete="name" placeholder="Nome do responsável">
+                </div>
+            </div>
+            <div class="form-grid">
+                <div class="form-group">
+                    <label for="password">Senha</label>
+                    <input type="password" id="password" name="password" required minlength="6" autocomplete="new-password" placeholder="Mínimo 6 caracteres">
+                </div>
+                <div class="form-group">
+                    <label for="password_confirm">Confirmar senha</label>
+                    <input type="password" id="password_confirm" name="password_confirm" required minlength="6" autocomplete="new-password" placeholder="Repita a senha">
+                </div>
+            </div>
+            <button type="submit" class="btn btn-primary btn-block">Criar conta da clínica</button>
+        </form>
+
+        <p class="auth-alt">Cadastro familiar? <a href="/register.html">Criar conta pessoal</a></p>
+        <p class="auth-alt">Já tem conta? <a href="/login.html">Entrar</a></p>
+    </div>
+</main>
+
+<footer class="site-footer"><p>© <span data-year></span> — VivaBem. Todos os direitos reservados. Projeto de TCC.</p></footer></body></html>

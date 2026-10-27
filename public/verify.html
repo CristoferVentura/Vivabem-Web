@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="pt-BR"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Verificar código — VivaBem</title><link rel="icon" href="/assets/images/favicon.svg"><link rel="stylesheet" href="/assets/css/main.css">
+<script src="/assets/js/app.js" defer></script><script src="/assets/js/main.js" defer></script></head>
+<body class="page-auth" data-page="verify"><header class="site-header" data-animate="header"><div class="nav-container">
+<a href="/index.html" class="brand-container"><img src="/assets/images/logo_apk.png" alt="Logo VivaBem" class="logo-img"><span class="logo-text">Viva<span>Bem</span></span></a>
+<button class="nav-toggle" type="button" aria-label="Abrir menu" aria-expanded="false"><span></span><span></span></button>
+<ul class="nav-menu"><li><a href="/index.html">Home</a></li><li><a href="/pages/quemsomos.html">Quem Somos</a></li>
+<li data-auth hidden><a href="/pages/nossoApp.html">Sobre o App</a></li><li data-auth hidden><a href="/pages/dashboard.html">Painel</a></li>
+<li data-company hidden><a href="/pages/clinic_caregivers.html">Cuidadores</a></li><li data-auth hidden><a href="/logout.html">Sair</a></li>
+<li data-guest><a href="/login.html">Entrar</a></li><li data-guest><a href="/register.html" class="nav-cta">Cadastrar</a></li></ul></div></header>
+<div id="feedback" role="alert" aria-live="polite" hidden></div>
+
+
+<main class="auth-page">
+    <div class="auth-card">
+        <h1>Verificar código</h1>
+        <p>Enviamos um código de 6 dígitos para <strong><span data-reset-email></span></strong>. Digite-o abaixo para redefinir sua senha.</p>
+
+        <div class="token-preview" data-token-preview hidden></div>
+
+        <form data-api="verify" method="POST" data-validate>
+            <div class="form-group">
+                <label for="token">Código de verificação</label>
+                <input
+                    type="text"
+                    id="token"
+                    name="token"
+                    class="token-input"
+                    inputmode="numeric"
+                    pattern="[0-9]{6}"
+                    maxlength="6"
+                    minlength="6"
+                    required
+                    autocomplete="one-time-code"
+                    placeholder="000000"
+                >
+            </div>
+            <button type="submit" class="btn btn-primary btn-block">Confirmar código</button>
+        </form>
+
+        <form data-api="resend-token" method="POST" class="resend-form">
+            <button type="submit" class="btn btn-secondary btn-block">Reenviar código</button>
+        </form>
+
+        <p class="auth-alt">
+            E-mail errado?
+            <a href="/forgot_password.html">Voltar à recuperação</a>
+        </p>
+    </div>
+</main>
+
+<footer class="site-footer"><p>© <span data-year></span> — VivaBem. Todos os direitos reservados. Projeto de TCC.</p></footer></body></html>

@@ -92,8 +92,8 @@
     document.querySelectorAll('[data-role-label]').forEach(element => element.textContent = session.user?.role === 'company' ? 'Área da clínica' : 'Área do usuário');
     document.querySelectorAll('.nav-menu a').forEach(link => link.classList.toggle('active', link.pathname === location.pathname));
     if (['dashboard','clinic_caregivers','nossoApp'].includes(page) && !session.user) { location.replace('/login.html'); return; }
-    if (page === 'clinic_caregivers' && session.user.role !== 'company') { location.replace('/pages/dashboard.html'); return; }
-    if (['login','register','register_company','forgot_password','verify','reset_password'].includes(page) && session.user) { location.replace('/pages/dashboard.html'); return; }
+    if (page === 'clinic_caregivers' && session.user.role !== 'company') { location.replace('/dashboard.html'); return; }
+    if (['login','register','register_company','forgot_password','verify','reset_password'].includes(page) && session.user) { location.replace('/dashboard.html'); return; }
     if (['verify','reset_password'].includes(page)) {
       if (!session.reset || (page === 'reset_password' && !session.reset.verified)) { location.replace('/forgot_password.html'); return; }
       document.querySelectorAll('[data-reset-email]').forEach(element => element.textContent = session.reset.email);
@@ -102,8 +102,8 @@
     }
     if (page === 'index' && session.user) {
       const links = document.querySelectorAll('.hero-actions a');
-      links[0].href = '/pages/dashboard.html'; links[0].textContent = 'Abrir painel';
-      links[1].href = '/pages/nossoApp.html'; links[1].textContent = 'Conhecer o app';
+      links[0].href = '/dashboard.html'; links[0].textContent = 'Abrir painel';
+      links[1].href = '/nossoApp.html'; links[1].textContent = 'Conhecer o app';
     }
     if (page === 'logout') { await request('logout', {}); location.replace('/login.html'); return; }
     if (page === 'clinic_caregivers') { resetCaregiverForm(); await loadCaregivers(); }

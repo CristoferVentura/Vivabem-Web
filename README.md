@@ -19,11 +19,11 @@ npm run dev
 
 - `APP_URL`: origem completa do site, usada na proteção de origem e no retorno do Google. Em desenvolvimento: `http://localhost:3000`.
 - `SUPABASE_URL`: URL HTTPS do projeto existente.
-- `SUPABASE_KEY`: chave **service_role**, somente no servidor. Nunca colocar em `public/`, no JavaScript do navegador, em commits ou logs. A chave anon antiga foi removida do código; não é adequada para acessar a tabela de senhas.
+- `SUPABASE_KEY`: chave **service_role**, somente no servidor. Nunca colocar em arquivos públicos, no JavaScript do navegador, em commits ou logs. A chave anon antiga foi removida do código; não é adequada para acessar a tabela de senhas.
 - `SESSION_SECRET`: segredo aleatório persistente de pelo menos 32 caracteres. Obrigatório com `NODE_ENV=production`.
 - Recuperação por e-mail: `SMTP_HOST`, `SMTP_PORT`, `SMTP_SECURE`, `SMTP_USER`, `SMTP_PASS`, `MAIL_FROM`. Configure os segredos no serviço de hospedagem. Para testes locais sem SMTP, habilite explicitamente `SHOW_CODE_FALLBACK=true`; o código aparece somente na sessão de recuperação e esse recurso é ignorado em produção.
 
-O banco existente continua usando a tabela `users`, seus IDs, papéis e hashes bcrypt (inclusive `$2y$` do PHP). Nenhum dado remoto é migrado automaticamente. `sql/supabase.sql` documenta a criação de um projeto Supabase novo; revise o esquema e as permissões de projetos existentes antes de aplicar qualquer SQL. Scripts MySQL antigos estão em `sql/legacy/` apenas como referência histórica.
+O banco existente continua usando a tabela `users`, seus IDs, papéis e hashes bcrypt (inclusive `$2y$` do PHP). Nenhum dado remoto é migrado automaticamente. `supabase.sql` documenta a criação de um projeto Supabase novo; revise o esquema e as permissões de projetos existentes antes de aplicar qualquer SQL. Scripts MySQL antigos estão na raiz (`schema.sql`, `migrate_company.sql` e `cleanup_painel.sql`) apenas como referência histórica.
 
 Para Google, habilite o provedor no Supabase Auth e permita a URL exata de retorno `APP_URL/api/auth/google/callback` (incluindo o parâmetro de estado dinâmico conforme a configuração de redirect URLs do Supabase). O fluxo usa PKCE e valida estado, identidade Google e confirmação do e-mail. O teste com o provedor real exige configuração externa e uma conta autorizada.
 
@@ -48,9 +48,13 @@ Publique em um serviço com Node.js; GitHub Pages sozinho não executa a API. Si
 
 ## Estrutura
 
-- `public/`: páginas HTML e assets públicos; somente esse diretório é servido.
-- `public/assets/js/app.js`: formulários, sessão e gestão da equipe.
-- `public/assets/js/main.js`: menu, máscaras, slideshow, acordeões e animações.
-- `server/app.js`: rotas, validação e autorização.
-- `server/supabase.js`: acesso REST/Auth pelo servidor, respeitando o proxy do ambiente.
-- `tests/`: testes HTTP e de navegador.
+Todos os arquivos do projeto ficam diretamente na raiz:
+
+- `*.html`, `main.css`, `client.js`, `main.js` e imagens: interface pública.
+- `index.js`: inicialização do servidor Node.js.
+- `server.js`: rotas, validação, autorização e lista explícita dos arquivos públicos.
+- `supabase.js`: acesso REST/Auth pelo servidor, respeitando o proxy do ambiente.
+- `app.test.js`: testes HTTP e de navegador.
+- `supabase.sql`: esquema PostgreSQL; demais arquivos SQL são referências MySQL históricas.
+
+O servidor disponibiliza somente os arquivos públicos autorizados. Código do servidor, testes, SQL, configuração, dependências e documentação não são expostos por HTTP. `node_modules/` é gerada pelo npm e `.git/` contém os metadados do Git; essas pastas de ferramentas não fazem parte da organização do código.

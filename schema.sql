@@ -1,6 +1,6 @@
 -- VivaBem — Schema MySQL
--- Importe no phpMyAdmin ou: mysql -u root < sql/schema.sql
--- Banco já existente? Use sql/migrate_company.sql
+-- Importe no phpMyAdmin ou: mysql -u root < schema.sql
+-- Banco já existente? Use migrate_company.sql
 
 CREATE DATABASE IF NOT EXISTS vivabem
   CHARACTER SET utf8mb4

@@ -7,10 +7,10 @@
     "node": ">=24"
   },
   "scripts": {
-    "start": "node --env-file-if-exists=.env server/index.js",
-    "dev": "node --env-file-if-exists=.env --watch server/index.js",
+    "start": "node --env-file-if-exists=.env index.js",
+    "dev": "node --env-file-if-exists=.env --watch index.js",
     "test": "node --test",
-    "check": "node --check server/app.js && node --check server/index.js && node --check public/assets/js/app.js && node --check public/assets/js/main.js"
+    "check": "node --check server.js && node --check index.js && node --check supabase.js && node --check client.js && node --check main.js"
   },
   "dependencies": {
     "bcryptjs": "^3.0.3",

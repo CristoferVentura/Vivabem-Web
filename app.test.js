@@ -2,8 +2,9 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { createServer } from 'node:http';
 import { existsSync } from 'node:fs';
+import { readFile, readdir } from 'node:fs/promises';
 import { chromium } from '@playwright/test';
-import { createApp } from '../server/app.js';
+import { createApp } from './server.js';
 
 function database() {
   const users = [];
@@ -61,7 +62,7 @@ test('cadastro, bcrypt PHP, sessão, logout e dados privados', async t => {
   assert.equal((await api('caregivers')).status,403);
   assert.equal((await api('logout',{})).status,200);
   assert.equal((await api('session')).user,null);
-  for (const path of ['/config/supabase.php','/.env','/server/app.js','/storage/mail.log']) assert.equal((await fetch(url+path)).status,404);
+  for (const path of ['/config/supabase.php','/.env','/.env.example','/.git/config','/server.js','/index.js','/supabase.js','/app.test.js','/supabase.sql','/schema.sql','/package.json','/package-lock.json','/README.md','/node_modules/express/package.json','/storage/mail.log']) assert.equal((await fetch(url+path)).status,404);
 });
 
 test('recuperação: código inválido, confirmação e nova senha', async t => {
@@ -128,7 +129,7 @@ test('navegador: HTML, menu móvel, formulários, painel e cuidadores', async t 
   await page.waitForURL('**/login.html');
   await page.locator('[name="email"]').fill(clinic.email); await page.locator('[name="password"]').fill(clinic.password);
   await page.getByRole('button',{name:'Entrar',exact:true}).click();
-  await page.waitForURL('**/pages/dashboard.html');
+  await page.waitForURL('**/dashboard.html');
   await page.getByRole('link',{name:'Gerenciar cuidadores'}).click();
   for(const [key,value] of Object.entries(caregiver)) await page.locator(`[name="${key}"]`).fill(value);
   await page.getByRole('button',{name:'Salvar cuidador'}).click();
@@ -142,7 +143,7 @@ test('navegador: HTML, menu móvel, formulários, painel e cuidadores', async t 
   page.on('dialog',dialog=>dialog.accept());
   await page.getByRole('button',{name:'Remover vínculo'}).click();
   await page.getByText('Nenhum cuidador cadastrado ainda.').waitFor();
-  await page.goto(url+'/pages/quemsomos.html');
+  await page.goto(url+'/quemsomos.html');
   assert.equal(await page.locator('[data-team-sector]').count(),5);
   await page.locator('.team-sector__header').first().click();
   assert.equal(await page.locator('.team-sector__header').first().getAttribute('aria-expanded'),'true');
@@ -180,7 +181,32 @@ test('Google: PKCE, validação de estado e callback com provedor simulado', asy
   const retryCallback=new URL(new URL(restart.headers.get('location')).searchParams.get('redirect_to'));
   retryCallback.searchParams.set('code','valid-code');
   const success=await fetch(retryCallback,{headers:{Cookie:cookie},redirect:'manual'});
-  assert.equal(success.headers.get('location'),'/pages/dashboard.html');
+  assert.equal(success.headers.get('location'),'/dashboard.html');
   assert.equal(exchanged,true);
   assert.equal(memory.users[0].auth_provider,'google');
+});
+
+
+test('estrutura plana: páginas, assets e caminhos antigos', async t => {
+  const {url}=await setup(t);
+  const files=await readdir(new URL('./',import.meta.url));
+  const pages=files.filter(file=>file.endsWith('.html'));
+  assert.equal(pages.length,12);
+  for(const name of pages){
+    const response=await fetch(`${url}/${name}`);
+    assert.equal(response.status,200,name);
+    const html=await response.text();
+    for(const [,path] of html.matchAll(/(?:href|src)="(\/[^"?#]*)/g)){
+      if(path.startsWith('/api/'))continue;
+      assert.equal(path.slice(1).includes('/'),false,path);
+      assert.equal((await fetch(url+path)).status,200,path);
+    }
+  }
+  const css=await readFile(new URL('./main.css',import.meta.url),'utf8');
+  assert.ok(css.includes('.site-header'));
+  for(const path of ['/dashboard.php','/pages/dashboard.php','/pages/dashboard.html']){
+    const response=await fetch(url+path,{redirect:'manual'});
+    assert.equal(response.status,301);
+    assert.equal(response.headers.get('location'),'/dashboard.html');
+  }
 });

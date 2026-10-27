@@ -6,7 +6,9 @@ import { randomBytes, randomInt, createHash, timingSafeEqual } from 'node:crypto
 import { fileURLToPath } from 'node:url';
 import { createSupabase } from './supabase.js';
 
-const publicDir = fileURLToPath(new URL('../public/', import.meta.url));
+const rootDir = fileURLToPath(new URL('./', import.meta.url));
+// Only browser files may be served, even though all project files share the root.
+const browserFiles = new Set(["VivaBem.png", "client.js", "clinic_caregivers.html", "dashboard.html", "favicon.ico", "favicon.svg", "forgot_password.html", "index.html", "login.html", "logo_apk.png", "logout.html", "main.css", "main.js", "nossoApp.html", "print-apps_idoso.jpg", "print-apps_idoso1.jpeg", "print-apps_idoso2.jpeg", "qrcode.png", "quemsomos.html", "register.html", "register_company.html", "reset_password.html", "verify.html"]);
 const safeFields = 'id,name,email,role,status';
 const caregiverFields = 'id,name,email,phone,cpf,specialties,status,created_at';
 const fail = (message, status = 400) => { throw Object.assign(new Error(message), { status }); };
@@ -111,7 +113,7 @@ export function createApp({ config = process.env, db = createSupabase({ url: con
     const user = await first({ email: `eq.${email.trim().toLowerCase()}`, select: `${safeFields},password,auth_provider` });
     if (!user || !await bcrypt.compare(password, String(user.password).replace(/^\$2y\$/, '$2b$'))) fail('E-mail ou senha incorretos.', 401);
     await login(req, user);
-    res.json({ redirect: '/pages/dashboard.html' });
+    res.json({ redirect: '/dashboard.html' });
   });
   for (const isCompany of [false, true]) {
     app.post(isCompany ? '/api/register-company' : '/api/register', async (req, res) => {
@@ -238,17 +240,26 @@ export function createApp({ config = process.env, db = createSupabase({ url: con
         await db('users',{ method:'PATCH', params:{ id:`eq.${user.id}` }, data:{ google_id:googleId } });
       }
       await login(req,user);
-      res.redirect('/pages/dashboard.html');
+      res.redirect('/dashboard.html');
     } catch { res.redirect('/login.html?error=google-login'); }
   });
   app.use('/api', (req,res) => res.status(404).json({ error:'Operação não encontrada.' }));
   // Preserve old bookmarks without executing or exposing PHP sources.
   app.get(/\.php$/, (req,res) => {
-    const target = req.path.replace(/\.php$/,'.html');
+    const target = req.path.replace(/^\/pages\//, '/').replace(/\.php$/,'.html');
     if (target.startsWith('/actions/') || target.startsWith('/config/') || target.startsWith('/includes/')) return res.sendStatus(404);
     res.redirect(301,target);
   });
-  app.use(express.static(publicDir, { dotfiles:'deny' }));
+  app.get(/^\/pages\/[^/]+\.html$/, (req, res, next) => {
+    const target = req.path.slice('/pages'.length);
+    if (!browserFiles.has(target.slice(1))) return next();
+    res.redirect(301, target);
+  });
+  app.use((req, res, next) => {
+    const file = req.path === '/' ? 'index.html' : req.path.slice(1);
+    if (!['GET', 'HEAD'].includes(req.method) || !browserFiles.has(file)) return next();
+    res.sendFile(file, { root: rootDir, dotfiles: 'deny' }, error => error && next(error));
+  });
   app.use((req,res) => res.status(404).type('html').send('<!doctype html><html lang="pt-BR"><meta charset="utf-8"><title>Página não encontrada</title><h1>Página não encontrada</h1><a href="/">Voltar ao início</a></html>'));
   app.use((error, req, res, next) => {
     if (res.headersSent) return next(error);
